@@ -1,0 +1,98 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Default-deny catch-all (Pillar 1)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.admin == true ||
+        request.auth.token.role == 'admin' ||
+        (request.auth.token.email != null && request.auth.token.email == '22171@qurtuba.edu.pk') ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidUser(data) {
+      return data.uid is string &&
+             data.uid.size() <= 128 &&
+             data.email is string &&
+             data.email.size() <= 150 &&
+             data.role in ['customer', 'admin'] &&
+             (!('wishlist' in data) || data.wishlist is list);
+    }
+
+    function isValidNewsletterSubscription(data) {
+      return data.keys().hasAll(['email', 'createdAt']) &&
+             data.keys().hasOnly(['email', 'createdAt', 'source', 'status']) &&
+             data.email is string &&
+             data.email.size() <= 150 &&
+             data.email.matches('^[^@]+@[^@]+\\.[^@]+$') &&
+             data.createdAt == request.time &&
+             (!('source' in data) || (data.source is string && data.source.size() <= 50)) &&
+             (!('status' in data) || data.status in ['active', 'unsubscribed']);
+    }
+
+    function isValidReview(data) {
+      return data.keys().hasAll(['productId', 'userId', 'userName', 'rating', 'comment', 'createdAt']) &&
+             data.keys().hasOnly(['productId', 'userId', 'userName', 'userEmail', 'rating', 'comment', 'verifiedPurchase', 'createdAt']) &&
+             data.productId is string && data.productId.size() <= 64 &&
+             data.userId == request.auth.uid &&
+             data.userName is string && data.userName.size() <= 100 &&
+             (!('userEmail' in data) || (data.userEmail is string && data.userEmail.size() <= 150)) &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() >= 3 && data.comment.size() <= 1000 &&
+             (!('verifiedPurchase' in data) || data.verifiedPurchase is bool) &&
+             data.createdAt == request.time;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isValidId(userId) && isOwner(userId) &&
+                       request.resource.data.role == 'customer' &&
+                       isValidUser(request.resource.data);
+      allow update: if isValidId(userId) && (
+        (isOwner(userId) && request.resource.data.role == resource.data.role && isValidUser(request.resource.data)) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Admins Collection
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Newsletter Subscriptions Collection
+    match /newsletter_subscriptions/{subscriptionId} {
+      allow create: if isValidId(subscriptionId) && isValidNewsletterSubscription(request.resource.data);
+      allow get, list, update, delete: if isAdmin();
+    }
+
+    // Product Reviews Collection
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidId(reviewId) && isValidReview(request.resource.data);
+      allow update: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin()) && isValidReview(request.resource.data);
+      allow delete: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "KK Collection — Luxury Cosmetics & Beauty",
+  "description": "Full-stack e-commerce cosmetics and beauty platform featuring high-performance skincare, luxury fragrance, makeup, shade & size variants, order management, and admin portal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

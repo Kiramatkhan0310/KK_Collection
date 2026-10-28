@@ -1,0 +1,78 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Customer profile and authentication records",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["customer", "admin"] },
+        "wishlist": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Trusted administrative record granting admin claims and permissions",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "grantedAt": { "type": "string" }
+      },
+      "required": ["email"]
+    },
+    "NewsletterSubscription": {
+      "title": "NewsletterSubscription",
+      "description": "Email newsletter subscriptions captured for marketing automation and seasonal releases",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "createdAt": { "type": "string" },
+        "source": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "unsubscribed"] }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "ProductReview": {
+      "title": "ProductReview",
+      "description": "Customer ratings and verified reviews for products",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "rating": { "type": "number", "minimum": 1, "maximum": 5 },
+        "comment": { "type": "string" },
+        "verifiedPurchase": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["productId", "userId", "userName", "rating", "comment", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Application user account records"
+    },
+    "/admins/{adminId}": {
+      "schema": "AdminRecord",
+      "description": "Verified administrators"
+    },
+    "/newsletter_subscriptions/{subscriptionId}": {
+      "schema": "NewsletterSubscription",
+      "description": "Public mailing list subscriber records for marketing automation"
+    },
+    "/reviews/{reviewId}": {
+      "schema": "ProductReview",
+      "description": "Customer product reviews and star ratings"
+    }
+  }
+}
