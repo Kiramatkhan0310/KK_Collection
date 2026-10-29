@@ -23,7 +23,7 @@ import { CourierTrackingModal } from './components/courier/CourierTrackingModal.
 import { QuickTrackLookupModal } from './components/courier/QuickTrackLookupModal.tsx';
 import { PolicyModal } from './components/policies/PolicyModal.tsx';
 import { ApiClient } from './services/apiClient.ts';
-import { SEEDED_CATEGORIES } from './data/catalogData.ts';
+import { SEEDED_CATEGORIES, SEEDED_PRODUCTS } from './data/catalogData.ts';
 import { CategorySlug, Product, Order } from './types/index.ts';
 import { Sparkles, SlidersHorizontal, Check, Loader2 } from 'lucide-react';
 
@@ -71,8 +71,72 @@ function Storefront() {
         if (isMounted) {
           setProducts(res.products || []);
         }
-      } catch (err) {
-        console.error('Failed to load products from server API', err);
+            } catch (err) {
+        console.warn(
+          'Server API unavailable. Using the local demo catalogue.',
+          err
+        );
+
+        if (isMounted) {
+          let fallbackProducts = SEEDED_PRODUCTS.filter(
+            (product) => product.isPublished
+          );
+
+          // Filter by selected category
+          if (activeCategory !== 'all') {
+            fallbackProducts = fallbackProducts.filter(
+              (product) => product.categoryId === activeCategory
+            );
+          }
+
+          // Filter by search text
+          if (searchQuery.trim()) {
+            const query = searchQuery.trim().toLowerCase();
+
+            fallbackProducts = fallbackProducts.filter((product) =>
+              [
+                product.name,
+                product.brand,
+                product.description,
+                product.categoryName,
+                product.sku,
+              ].some((value) => value?.toLowerCase().includes(query))
+            );
+          }
+
+          // Show products that have stock
+          if (onlyInStock) {
+            fallbackProducts = fallbackProducts.filter(
+              (product) => product.stockQuantity > 0
+            );
+          }
+
+          // Apply the selected sorting option
+          fallbackProducts.sort((a, b) => {
+            switch (sortBy) {
+              case 'price-low':
+                return a.price - b.price;
+
+              case 'price-high':
+                return b.price - a.price;
+
+              case 'rating':
+                return (b.rating ?? 0) - (a.rating ?? 0);
+
+              case 'name':
+                return a.name.localeCompare(b.name);
+
+              case 'featured':
+              default:
+                return (
+                  Number(b.isFeatured) - Number(a.isFeatured) ||
+                  a.name.localeCompare(b.name)
+                );
+            }
+          });
+
+          setProducts(fallbackProducts);
+        }
       } finally {
         if (isMounted) setLoadingProducts(false);
       }

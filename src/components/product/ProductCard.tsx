@@ -34,7 +34,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onOpenDetails
       ? 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=80'
       : 'https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&w=800&q=80';
 
-  const [currentImg, setCurrentImg] = useState<string>(product.images[0] || categoryFallback);
+  const resolveProductImage = (image?: string) => {
+  if (!image) return categoryFallback;
+
+  if (image.startsWith('/src/assets/images/')) {
+    const filename = image.split('/').pop();
+    return `${import.meta.env.BASE_URL}images/${filename}`;
+  }
+
+  return image;
+};
+
+const [currentImg, setCurrentImg] = useState<string>(
+  resolveProductImage(product.images[0])
+);
   const [hasTriedFallback, setHasTriedFallback] = useState(false);
 
   const isOutOfStock = product.stockQuantity <= 0;

@@ -12,21 +12,21 @@ export const CuratedSpotlights: React.FC<CuratedSpotlightsProps> = ({ onSelectCa
       category: 'skincare' as CategorySlug,
       title: 'Active Skin Elixirs & Barrier Repair',
       description: 'Stabilized 15% Vitamin C, 10% Niacinamide, and multi-molecular ceramides for clinical radiance.',
-      image: '/src/assets/images/spotlight_skincare_elixir_1792869212007.jpg',
+      image: `${import.meta.env.BASE_URL}images/spotlight_skincare_elixir_1792869212007.jpg`,
       tag: 'Bioactive Formulas'
     },
     {
       category: 'fragrance' as CategorySlug,
       title: 'Artisanal Extraits & Botanical Parfums',
       description: 'Turkish damask rose, amber resins, and Cambodian oud created by master European perfumers.',
-      image: '/src/assets/images/craftsmanship_perfume_amber_1792869212475.jpg',
+      image: `${import.meta.env.BASE_URL}images/craftsmanship_perfume_amber_1792869212475.jpg`,
       tag: 'Fine Fragrance'
     },
     {
       category: 'makeup' as CategorySlug,
       title: 'Silk Radiance Complexion & Velour Lips',
       description: 'Weightless micro-milled pigments and non-drying matte lipsticks designed for warm undertones.',
-      image: '/src/assets/images/editorial_makeup_collection_1792869212052.jpg',
+      image: `${import.meta.env.BASE_URL}images/editorial_makeup_collection_1792869212052.jpg`,
       tag: 'Studio Artistry'
     }
   ];

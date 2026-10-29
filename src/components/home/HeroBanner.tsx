@@ -14,7 +14,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ onSelectCategory }) => {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img
-            src="/src/assets/images/hero_cosmetics_luxury_1792869210810.jpg"
+            src={`${import.meta.env.BASE_URL}images/hero_cosmetics_luxury_1792869210810.jpg`}
             alt="KK Collection Luxury Editorial"
             className="w-full h-full object-cover object-center scale-[1.02] transition-transform duration-1000"
             referrerPolicy="no-referrer"
